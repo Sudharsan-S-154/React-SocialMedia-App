@@ -1,14 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Nav() {
+function Nav({ searchBox, setSearchBox }) {
   return (
     <nav className="nav">
-      <form>
+      <form onSubmit={(e)=>{e.preventDefault()}}>
         <label className="searchLabel" for="search">
           Search Here
         </label>
-        <input type="form" id="search" placeholder="Search here...." />
+        <input
+          type="form"
+          id="search"
+          placeholder="Search here...."
+          value={searchBox}
+          onChange={(e) => setSearchBox(e.target.value)}
+        />
       </form>
       <section className="navElements">
         <Link className="link" to="/">
@@ -19,7 +25,9 @@ function Nav() {
           <div className="addPost">Add Post</div>
         </Link>
 
-        <div className="about">About</div>
+        <Link className="link" to="/about">
+          <div className="about"> About </div>
+        </Link>
       </section>
     </nav>
   );

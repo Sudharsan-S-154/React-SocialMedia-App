@@ -1,16 +1,32 @@
 import React from "react";
 
-function AddPost() {
+function AddPost({ titleValue, setTitleValue, descValue, setDescValue ,handleSubmit}) {
   return (
-    <div>
-      <form className="addPost">
+    <div className="postContainer">
+      <form className="addPostForm" onSubmit={handleSubmit}>
         <label>Title : </label>
-        <input type="text" />
+        <input
+          className="title"
+          type="text"
+          value={titleValue}
+          onChange={(e)=>setTitleValue(e.target.value)}
+          placeholder="Add a title"
+          required
+        />
 
         <label>Desc : </label>
-        <input type="text" />
-        
-        <button type="submit">submit</button>
+        <textarea
+          className="desc"
+          type="text"
+          value={descValue}
+          onChange={(e)=>setDescValue(e.target.value)}
+          placeholder="Share your thoughts...."
+          required
+        />
+
+        <button className="submitBtn" type="submit">
+          submit
+        </button>
       </form>
     </div>
   );

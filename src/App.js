@@ -1,43 +1,97 @@
-import { Routes, Route, Link, Router } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Header from "./Header";
 import Main from "./Main";
 import AddPost from "./AddPost";
 import "./index.css";
-import Post from "./Post";
 // import PostLayout from "./PostLayout";
 import Nav from "./Nav";
 import Footer from "./Footer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import About from "./About";
+import ViewPost from "./ViewPost";
+import { getRequestHandling, postRequestHandling, deleteRequestHandling } from "./RequestHandling";
 
 function App() {
-  let [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Japan vlogs",
-      date: "April 20th, 2025 10.00AM",
-      body: "Japan is a top-tier tourist destination known for its unique blend of ancient tradition.",
-    },
-    {
-      id: 2,
-      title: "America vlogs",
-      date: "May 23th, 2025 12.00PM",
-      body: "The United States is one of the most diverse and dynamic travel destinations in the world.",
-    },
-    {
-      id: 3,
-      title: "Norway vlogs",
-      date: "Dec 7th, 2025 09.00PM",
-      body: "Norway is a breathtaking destination known for its dramatic fjords, northern lights, Viking heritage.",
-    },
-  ]);
+  const APP_URL = "http://localhost:3001/posts";
+  let [posts, setPosts] = useState([]);
+  useEffect(() => {
+    // debugger;
+    const callRequestHandling = async () => {
+      const result = await getRequestHandling(APP_URL);
+      setPosts(result);
+    };
+    // debugger;
+    callRequestHandling();
+  }, []);
+  const navigate = useNavigate();
+
+  const [titleValue, setTitleValue] = useState("");
+  const [descValue, setDescValue] = useState("");
+
+  const [searchBox, setSearchBox] = useState("");
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    // debugger
+    const newPost = {
+      id: posts.length + 1,
+      title: titleValue,
+      date: format(new Date(), "MMMM dd, yyyy pp"),
+      body: descValue,
+    };
+    setPosts([...posts, newPost]);
+    const result = await postRequestHandling(APP_URL, newPost);
+    setTitleValue("");
+    setDescValue("");
+    navigate("/");
+  };
+
+  const handleDelete = async (id) => {
+    debugger
+    const newPost = posts.filter((post) => post.id !== id);
+    const DELETE_APP_URL =  `${APP_URL}/${id}`;
+    await deleteRequestHandling(DELETE_APP_URL);
+    setPosts(newPost);
+    setTimeout(() => {
+      navigate("/");
+    }, 0);
+  };
 
   return (
     <div className="container">
       <Header />
-      <Nav />
-      <Routes>
-        <Route path="/" element={<Main posts={posts} />} />
-        <Route path="/addPost" element={<AddPost />} />
+      <Nav searchBox={searchBox} setSearchBox={setSearchBox} />
+      <Routes className="mainBox">
+        <Route
+          path="/"
+          element={
+            <Main
+              posts={posts.filter((post) =>
+                post.title.toLowerCase().includes(searchBox.toLowerCase())
+              )}
+            />
+          }
+        />
+        <Route path="/addPost">
+          <Route
+            index
+            element={
+              <AddPost
+                titleValue={titleValue}
+                setTitleValue={setTitleValue}
+                descValue={descValue}
+                setDescValue={setDescValue}
+                handleSubmit={handleSubmit}
+              />
+            }
+          />
+          <Route
+            path=":id"
+            element={<ViewPost posts={posts} handleDelete={handleDelete} />}
+          />
+        </Route>
+        <Route path="/about" element={<About />} />
       </Routes>
       <Footer />
     </div>
