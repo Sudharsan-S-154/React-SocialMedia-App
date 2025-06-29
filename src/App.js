@@ -10,52 +10,84 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import About from "./About";
 import ViewPost from "./ViewPost";
-import { getRequestHandling, postRequestHandling, deleteRequestHandling } from "./RequestHandling";
-
+import api from "./RequestHandling";
+import EditPost from "./EditPost";
 function App() {
-  const APP_URL = "http://localhost:3001/posts";
   let [posts, setPosts] = useState([]);
   useEffect(() => {
-    // debugger;
     const callRequestHandling = async () => {
-      const result = await getRequestHandling(APP_URL);
-      setPosts(result);
+      try {
+        const result = await api.get("/posts");
+        if (result != null) {
+          setPosts(result.data);
+        }
+      } catch (e) {
+        console.log(e);
+      }
     };
-    // debugger;
     callRequestHandling();
   }, []);
   const navigate = useNavigate();
 
   const [titleValue, setTitleValue] = useState("");
   const [descValue, setDescValue] = useState("");
+  const [editTitleValue, setEditTitleValue] = useState("");
+  const [editDescValue, setEditDescValue] = useState("");
 
   const [searchBox, setSearchBox] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // debugger
     const newPost = {
       id: posts.length + 1,
       title: titleValue,
       date: format(new Date(), "MMMM dd, yyyy pp"),
       body: descValue,
     };
-    setPosts([...posts, newPost]);
-    const result = await postRequestHandling(APP_URL, newPost);
-    setTitleValue("");
-    setDescValue("");
-    navigate("/");
+    try {
+      const result = await api.post("/posts", newPost);
+      setPosts([...posts, newPost]);
+      setTitleValue("");
+      setDescValue("");
+      navigate("/");
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleDelete = async (id) => {
-    debugger
     const newPost = posts.filter((post) => post.id !== id);
-    const DELETE_APP_URL =  `${APP_URL}/${id}`;
-    await deleteRequestHandling(DELETE_APP_URL);
     setPosts(newPost);
-    setTimeout(() => {
-      navigate("/");
-    }, 0);
+    const DELETE_APP_URL = `posts/${id}`;
+    try {
+      await api.delete(DELETE_APP_URL);
+      setTimeout(() => {
+        navigate("/");
+      }, 0);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleEdit = async (e, id) => {
+    e.preventDefault();
+    const newPost = {
+      id: id,
+      title: editTitleValue,
+      date: format(new Date(), "MMMM dd, yyyy pp"),
+      body: editDescValue,
+    };
+    const editPost = posts.map((post) => (post.id === id ? newPost : post));
+    const EDIT_APP_URL = `posts/${id}`;
+    setPosts(editPost);
+    try {
+      const result = await api.put(EDIT_APP_URL, newPost);
+    } catch (e) {
+      console.log(e);
+    }
+    finally{
+      navigate('/');
+    }
   };
 
   return (
@@ -91,6 +123,19 @@ function App() {
             element={<ViewPost posts={posts} handleDelete={handleDelete} />}
           />
         </Route>
+        <Route
+          path="/editPost/:id"
+          element={
+            <EditPost
+              editTitleValue={editTitleValue}
+              setEditTitleValue={setEditTitleValue}
+              editDescValue={editDescValue}
+              setEditDescValue={setEditDescValue}
+              posts={posts}
+              handleEdit={handleEdit}
+            />
+          }
+        />
         <Route path="/about" element={<About />} />
       </Routes>
       <Footer />
