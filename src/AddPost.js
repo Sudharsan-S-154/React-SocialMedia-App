@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
+import DataContext from "./Context/DataContext";
 
-function AddPost({ titleValue, setTitleValue, descValue, setDescValue ,handleSubmit}) {
+function AddPost() {
+  const { titleValue, setTitleValue, descValue, setDescValue ,handleSubmit} = useContext(DataContext);
   return (
     <div className="postContainer">
       <form className="addPostForm" onSubmit={handleSubmit}>

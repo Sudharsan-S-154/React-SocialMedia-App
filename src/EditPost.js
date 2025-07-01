@@ -1,25 +1,27 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import DataContext from "./Context/DataContext";
 
-function EditPost({
-  editTitleValue,
-  setEditTitleValue,
-  editDescValue,
-  setEditDescValue,
-  posts,
-  handleEdit
-}) {
+function EditPost() {
+  const {
+    editTitleValue,
+    setEditTitleValue,
+    editDescValue,
+    setEditDescValue,
+    posts,
+    handleEdit,
+  } = useContext(DataContext);
   const { id } = useParams();
   const post = posts.find((post) => post.id === Number(id));
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     setEditTitleValue(post.title);
     setEditDescValue(post.body);
-  },[])
+  }, []);
 
   return (
     <div className="editContainer">
-      <form className="editPostForm" onSubmit={(e)=>handleEdit(e,post.id)}>
+      <form className="editPostForm" onSubmit={(e) => handleEdit(e, post.id)}>
         <h3 style={{ textAlign: "center" }}>Edit Form</h3>
         <label>Title : </label>
         <input
